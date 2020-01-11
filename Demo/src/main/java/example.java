@@ -11,13 +11,11 @@ public class example extends HttpServlet {
 
     private String message;
 
-    @Override
     public void init() throws ServletException {
         // Do required Initialization
         message = "Hello World";
     }
 
-    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         //Set Response content type
@@ -28,7 +26,6 @@ public class example extends HttpServlet {
         out.println("<h1>" + message + "</h1>");
     }
 
-    @Override
     public void destroy() {
         // do nothing
     }

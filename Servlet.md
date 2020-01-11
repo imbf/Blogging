@@ -168,3 +168,105 @@ javax.servlet.http.HttpServlet 클래스는 Servlet 인터페이스를 구현한
 
  Hello World를 보여주는 Sample Code
 
+```java
+// Import Required Java Libraries
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+// extends HttpServlet Class
+public class example extends HttpServlet {
+
+    private String message;
+
+    public void init() throws ServletException {
+        // Do required Initialization
+        message = "Hello World";
+    }
+
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        //Set Response content type
+        resp.setContentType("text/html");
+
+        // Actual logic goes here.
+        PrintWriter out = resp.getWriter();
+        out.println("<h1>" + message + "</h1>");
+    }
+
+    public void destroy() {
+        // do nothing
+    }
+}
+```
+
+### Compiling a Servlet
+
+환경 설정이 적절히 완료되었다고 가정하고, Hello.java 파일을 컴파일 하자
+
+```java
+javac HelloWorld.java
+```
+
+만약 servlet이 다른 라이브러리를 의존하고 있다면, CLASSPATH에 이러한 JAR 파일을 추가해야 한다.
+
+모든것이 순조로히 잘 진행 되었다면 컴파일은 같은 디렉토리에 HelloWorld.class 파일을 생성할 것이고 다음에는 어떻게 서블릿을 배포할 것인지에 대해서 알아보자!
+
+### Servlet Deployment
+
+기본적으로, servlet application은 \<Tomat-installationdirectory>/webapps/ROOT 에 위치해있고, class 파일은 \<Tomcat-installationdirectory>/webapps/ROOT/WEB-INF/classes 에 위치해있다.
+
+만약 **com.myorg.MyServlet** 과 같은 품질높은 클레스 이름을 가지고 있다면 이러한 servlet 클래스들은 WEBINF/classes/com/myorg/MyServlet.class 경로에 위치해 있을 것이다.
+
+지금부터 **HelloWorld.class**를 \<Tomcat-installation-directory>/webapps/ROOT/WEB-INF/classes 에 복사하고 아래 코드를 가진 **web.xml**을 \<Tomcat-installation-directory>/webapps/ROOT/WEB-INF/에 위치시킨다.
+
+**web.xml**
+
+```xml
+<web-app>
+  <servlet>
+     <servlet-name>HelloWorld</servlet-name>
+     <servlet-class>HelloWorld</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+     <servlet-name>HelloWorld</servlet-name>
+     <url-pattern>/HelloWorld</url-pattern>
+  </servlet-mapping>
+</web-app>
+```
+
+다음으로 tomcat server를 실행하고 클라이언트가 http://localhost:8080/HelloWorld에 접속하면
+Hello World라는 text가 h1태그 내에 작성된 html document가 응답될 것이다.
+
+---
+
+## Servlets - Form Data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
