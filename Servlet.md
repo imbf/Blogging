@@ -246,6 +246,206 @@ Hello World라는 text가 h1태그 내에 작성된 html document가 응답될 �
 
 ## Servlets - Form Data
 
+**브라우저는 기본적으로 2가지의 (GET, POST) 메소드를 사용해서 웹서버로 정보를 전달한다.**
+
+### GET Method
+
+GET Method를 사용하는 정보는 QUERY_STRING 헤더를 사용해서 전달되고, QUERY_STRING 환경변수를 통해서 접근할 수 있다. servlet은 이러한 타입의 요청을 **doGet()**  메서드를 사용해서 핸들링한다.
+
+### POST Method
+
+서버로 정보를 전달하는 좀 더 믿음직한 방법은 POST 메서드이다. POST 메서드는 GET 메서드와 같은 방식으로 정보를 패키지화 하지만 URL 뒤에 텍스트 문자열로 정보를 보내지 않고 별도의 메세지로 서버로 정보를 보냅니다. 이 메세지들은 processing할 수 있고, parsing 할 수 있는 형태로 서버 단으로 들어 옵니다. Servlet은 doPost() 메서드로 이러한 형태의 요청을 핸들링 합니다.
+
+### Reading Form Data using Servlet
+
+Servlet은 자동적으로 parsing된 form 데이터를 상황에 따라 다음 메소드를 사용하여 핸들링합니다.
+
+- getParamter() : form parameter의 값을 얻기 위해서 request.getParameter()를 사용합니다.
+- getParameterValues() : 매개 변수가 2번 이상 나타나고, checkbox와 같이 다중의 값을 리턴할 때 이 메소드를 사용합니다.
+- getParameterNames() : 현재 요청의 모든 매개변수의 리스트를 원할 때 이 메서드를 사용합니다.
+
+### GET Method Example using URL
+
+```java
+// Import required java libraries
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
+// Extend HttpServlet class
+public class CheckBox extends HttpServlet {
+ 
+   // Method to handle GET method request.
+   public void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+      
+      // Set response content type
+      response.setContentType("text/html");
+
+      PrintWriter out = response.getWriter();
+      String title = "Reading Checkbox Data";
+      String docType =
+         "<!doctype html public \"-//w3c//dtd html 4.0 " + "transitional//en\">\n";
+
+      out.println(docType +
+         "<html>\n" +
+            "<head><title>" + title + "</title></head>\n" +
+            "<body bgcolor = \"#f0f0f0\">\n" +
+               "<h1 align = \"center\">" + title + "</h1>\n" +
+               "<ul>\n" +
+                  "  <li><b>Maths Flag : </b>: "
+                  + request.getParameter("maths") + "\n" +
+                  "  <li><b>Physics Flag: </b>: "
+                  + request.getParameter("physics") + "\n" +
+                  "  <li><b>Chemistry Flag: </b>: "
+                  + request.getParameter("chemistry") + "\n" +
+               "</ul>\n" +
+            "</body>"
+         "</html>"
+      );
+   }
+
+   // Method to handle POST method request.
+   public void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+      
+      doGet(request, response);
+   }
+}
+```
+
+---
+
+## Servlets - Client HTTP Request
+
+브라우저가 웹 페이지를 요청할 때, 웹 서버에게 직접적으로 읽을 수 없는 다양한 정보를 보낸다.
+이러한 정보들이 HTTP Request의 헤더의 일부분으로서 이동하기 때문에 읽을 수 없다.
+
+browser 단에서 오는 중요한 header 정보는 다음과 같다. 이러한 정보들은 웹 프로그래밍에서 매우 자주 사용될 것이다.
+
+- **Accept :** 브라우저와 다른 클라이언트가 다룰 수 있는 MIME 타입을 명시한 header정보이다.
+   (ex. image/png, image/jpeg, ...)
+- **Accept-Charset** : 브라우저가 정보 표현에 사용할 수 있는 Charater Set을 명시한 header 정보이다.
+   (ex. ISO-8859-1, ...)
+- **Accept-Encoding** : 브라우저가 알고있는 핸들링 방법의 인코딩 유형을 명시한 header 정보이다.
+   (ex. gzip, compress, ...)
+- **Accept-Language** : Servlet이 두개 이상의 언어로 결과를 생성할 수 있는 경우(in-case) 클라이언트가 선호하는 언어를 명시한 header 정보이다.
+- **Authorization** : 암호로 보호 된 웹 페이지에 액세스 할 때 자신을 식별하는 데 사용되는 header 정보이다.
+- **Connection** : 클라이언트가 지속가능한 HTTP connection을 핸들링 할 수있을지 알려주는 header 정보이다.
+   지속가능한 connection은 클라이언트 또는 다른 브라우저가 한번의 요청으로 여러개의 파일을 검색할 수 있도록 허용한다. **Keep Alive**값의 의미는 지속가능한 connection이 사용되어지고 있다는 것을 의미한다.
+- **content-Length :** POST 요청에만 사용가능한 header 정보이고, 바이트 형식으로 POST 데이터의 크기를 제공하는 header 정보이다.
+- **Cookie :** cookies를 보낸 서버에 반환하는 header 정보이다.
+- **Host :** URL에 지정된 호스트 및 포트를 명시하는 header 정보이다.
+- **If-Modified-Since :** 클라이언트가 지정된 날짜 이후에 변경된 경우에만 page를 원한다는 것을 명시하는 header 정보이다. 서버는 새로운 결과가 없는 경우에 304 코드를 전송합니다.
+- **If-Unmodifed-Since :** document가 지정한 날짜보다 오래된 경우에만 작업이 성공적으로 진행하도록 명시하는 header 정보
+- **Referer :** Web page에서 참조하는 URL을 명시하는 header 정보이다.
+- **User-Agent**  : 브라우저 또는 요청을 하는 다른 client가 브라우저 종류를 식별하고 다른 타입의 return 데이터를 받을 수 있도록 제공하는 header 정보이다.
+
+### HTTP Header Request Example
+
+```java
+// Import required java libraries
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.util.*;
+ 
+// Extend HttpServlet class
+public class DisplayHeader extends HttpServlet {
+ 
+   // Method to handle GET method request.
+   public void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+      
+      // Set response content type
+      response.setContentType("text/html");
+ 
+      PrintWriter out = response.getWriter();
+      String title = "HTTP Header Request Example";
+      String docType =
+         "<!doctype html public \"-//w3c//dtd html 4.0 " + "transitional//en\">\n";
+
+      out.println(docType +
+         "<html>\n" +
+         "<head><title>" + title + "</title></head>\n"+
+         "<body bgcolor = \"#f0f0f0\">\n" +
+         "<h1 align = \"center\">" + title + "</h1>\n" +
+         "<table width = \"100%\" border = \"1\" align = \"center\">\n" +
+         "<tr bgcolor = \"#949494\">\n" +
+         "<th>Header Name</th><th>Header Value(s)</th>\n"+
+         "</tr>\n"
+      );
+ 
+      Enumeration headerNames = request.getHeaderNames();
+    
+      while(headerNames.hasMoreElements()) {
+         String paramName = (String)headerNames.nextElement();
+         out.print("<tr><td>" + paramName + "</td>\n");
+         String paramValue = request.getHeader(paramName);
+         out.println("<td> " + paramValue + "</td></tr>\n");
+      }
+      out.println("</table>\n</body></html>");
+   }
+   
+   // Method to handle POST method request.
+   public void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+      doGet(request, response);
+   }
+}
+```
+
+---
+
+## Servlets - Server HTTP Response
+
+웹 서버는 HTTP request에 응답한다. 
+response는 전형적으로 status line, response headers, blank line, document로 이루어져 있다.
+
+전형적인 response는 다음과 같다.
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/html
+Header2: ...
+...
+HeaderN: ...
+   (Blank Line)
+<!doctype ...>
+<html>
+   <head>...</head>
+   <body>
+      ...
+   </body>
+</html>
+```
+
+**다음은 웹 서버사이드로부터 브라우저로 번송되는 response header에 대한 요약이다.**
+
+- **Allow :** 이 헤더는 서버가 지원하는 request 메서드(GET, POST, etc)를 명시하는 header 정보이다.
+- **Cache-Control :** 응답 document가 안전하게 캐싱되었는지의 상태를 명시하는 header 정보이다.
+   값으로는 public( document를 캐싱할 수 있다), Private( 단일 사용자를 위한 document ), no-cache( document를 캐싱할 수 없다.)
+- **Connection :** 브라우저에게 지속적인 HTTP connections를 사용할지 말지를 결정하는 header 정보이다.
+- **Content-Disposition :** 사용자가 정해진 이름의 파일의 디스크에 응답을 저장하라고 요청하는 브라우저를 요청하는 header 정보이다.
+- **Content-Encoding :** 트랜스미션 동안에 인코딩 되어지는 페이지를 명시하는 header 정보이다.
+- **Content-Language :** document에서 씌여진 언어를 명시하는 header 정보이다.
+- **Content-Length :** response의 바이트 수를 가리키는 header 정보이다.
+- **Content-Type :** response의 document를 가리키는 MIME 타입의 header 정보이다.
+- **Expires :** 내용이 오래된 것으로 간주되어 더 이상 캐시되지 않는 시간을 지정하는 header 정보이다.
+- **Last-Modified :** 이 헤더는 document가 최근에 변경한 시간을 가리키는 header 정보이다.
+- **Location :** 이 헤더는 300번대의 상태 코드를 가진 모든 응답에 포함되어야 한다. 이것은 브라우저에게 문서 주소를 알리고 이 위치에 브라우저가 자동적으로 다시 연결되고 새 문서를 검색한다.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
