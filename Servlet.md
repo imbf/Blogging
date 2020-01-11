@@ -97,7 +97,7 @@ public void init() throws ServletException{
 
 ### The service() Method
 
-service 메서드는 실제 작업을 수행하는 메인 메서드이다. **servlet container(ex. web server)** 는 클라이언트로 부터 오는 요청을 처리하기 위해, 정형화된 응답을 클라이언트에게 작성하기 위해 service() 메서드를 호출합니다.
+service 메서드는 실제 작업을 수행하는 메인 메서드이다. **Servlet container(ex. web server)** 는 클라이언트로 부터 오는 요청을 처리하기 위해, 정형화된 응답을 클라이언트에게 작성하기 위해 service() 메서드를 호출합니다.
 
 **서버가 servlet을 위한 요청을 받을 때마다, 서버는 새로운 스레드를 생성하고(spawn) service 메서드를 호출합니다.** service 메서드는 HTTP request type(GET, POST, PUT, DELETE, etc.)등을 체크하고 적절히 doGet, doPost, doPut, doDelete, 등의 메서드를 호출합니다.
 
@@ -435,6 +435,11 @@ HeaderN: ...
 - **Expires :** 내용이 오래된 것으로 간주되어 더 이상 캐시되지 않는 시간을 지정하는 header 정보이다.
 - **Last-Modified :** 이 헤더는 document가 최근에 변경한 시간을 가리키는 header 정보이다.
 - **Location :** 이 헤더는 300번대의 상태 코드를 가진 모든 응답에 포함되어야 한다. 이것은 브라우저에게 문서 주소를 알리고 이 위치에 브라우저가 자동적으로 다시 연결되고 새 문서를 검색한다.
+- **Refresh :** 브라우저가 업데이트 된 페이지에 얼마나 빨리 요청을 해야하는지에 대해서 명시한 header 정보이다.
+- **Retry-After :** 503 응답일때 클라이언트에게 요청을 얼마나 빨리 반복할 수 있는지 알려줍니다.
+- **Set-Cookie :** 페이지와 연관된 쿠키를 명시하는 header 정보 입니다.
+
+
 
 
 
