@@ -31,11 +31,30 @@ Relational Objects는 테이블(tabular) 형식으로 나타내어진다. 반면
 
 이전 버젼의 EJB에서, 정의된 persistence 단계에서 business 로직 단계를 javax.ejb.EntitiyBean 인터페이스를 사용해서 결합했다.
 
-- 
+- EJB 3.0을 도입하는 동안, persistence 계층이 분리되고 JPA(Java Persistence API) 1.0으로 구체화 되었습니다.
+- JPA 2.0은 2009년 10월 10일에 JAVA EE6에서 출시하였다.
 
+### JPA Providers
 
+JPA는 오픈소스 API이다. Oracle, Redhat, Eclipse 등과 같은 다양한 엔터프라이즈 공급업체는 JPA Persistence 기능을 새로운 제품에 추가해서 사용자들에게 공급한다.
 
+이러한 제품의 예로는 : Hibernate, Eclipselink, Toplink, Spring Data JPA, etc
 
+---
+
+## JPA - Architecture
+
+JPA는 business 엔티티를 relational 엔티티로써 저장하는 소스이다.
+
+### Class Level Architecture
+
+<img src="/Users/baejongjin/Library/Application Support/typora-user-images/image-20200112235505507.png" alt="image-20200112235505507" style="zoom:50%;" />
+
+위의 이미지는 클래스 레벨의 JPA 아키텍처를 보여준다. 위의 이미지는 JPA의 핵심 클래스와 인터페이스를 보여준다.
+
+**JPA의 핵심 클래스 및 아키텍처 소개**
+
+- EntitiyManagerFactory : 
 
 
 
