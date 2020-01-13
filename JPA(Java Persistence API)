@@ -243,6 +243,61 @@ JPA의 모든 어노테이션은 javax.persistence 패키지에 정의되어있�
 - @JoinColumn : 다:다, 1:다 연관에 사용되는 엔티티 컬렉션 또는 엔티티 연관을 명시하는 어노테이션이다.
 - etc
 
+```java
+import javax.persistence.*;
+
+@Entity
+@Table(name = "EMPLOYEE")
+public class Employee {
+   @Id @GeneratedValue
+   @Column(name = "id")
+   private int id;
+
+   @Column(name = "first_name")
+   private String firstName;
+
+   @Column(name = "last_name")
+   private String lastName;
+
+   @Column(name = "salary")
+   private int salary;  
+
+   public Employee() {}
+   
+   public int getId() {
+      return id;
+   }
+   
+   public void setId( int id ) {
+      this.id = id;
+   }
+   
+   public String getFirstName() {
+      return firstName;
+   }
+   
+   public void setFirstName( String first_name ) {
+      this.firstName = first_name;
+   }
+   
+   public String getLastName() {
+      return lastName;
+   }
+   
+   public void setLastName( String last_name ) {
+      this.lastName = last_name;
+   }
+   
+   public int getSalary() {
+      return salary;
+   }
+   
+   public void setSalary( int salary ) {
+      this.salary = salary;
+   }
+}
+```
+
 ### Java Bean Standard
 
 Java Class는 인스턴스의 속성과 메소드를 객체라고 부르는 하나의 단위로 캡슐화 한다.
