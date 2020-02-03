@@ -213,13 +213,47 @@ public class Application implements CommandLineRunner {
 - **클라이언트에게 타깃에 대한 레퍼런스를 넘겨야 하는데 실제 타깃 오브젝트 대신 프록시를 넘긴다.**
 - 해당 타깃을 사용하려고 할 떄 프록시가 타깃 오브젝트를 생성하고 요청을 위임해 주는 식이다.
 
+### 프록시 클래스 예제
 
+```java
+interface Hello {
+   String sayHello(String name);
+}
+```
 
+```java
+// 구현한 타깃 클래스
+public class HelloTarget implements Hello {
+   public String sayHello(String name){
+      return "Hello" + name;
+   }
+}
+```
 
+```java
+// 인터페이스를 구현한 프록시
+public class HelloUppercase implements Hello {
+   Hello hello; //위임할 타깃 오브젝트(다른 프록시 접근을 위해 인터페이스로 접근)
+   
+   public HelloUpperCase(Hello hello){
+      this.hello = hello;
+   }
+   
+   public String sayHello(String name) {
+      return hello.sayHello(name).toUpperCase();	//위임과 부가기능 적용
+   }
+}
+```
 
-
-
-
+```java
+@Test
+public void simpleProxy(){
+   // 클라이언트에게 타깃에 대한 레퍼런스를 넘겨야 하는데 실제 타깃 오브젝트 대신 프록시를 넘긴다. (연결만 시켜준다)
+   Hello proxiedHello = new HelloUppercase(new HelloTarget());
+   // 프록시 레퍼런스에 대한 Test 
+   asserThat(proxiedHello.sayHello("Havi"), is("HELLO HAVI"));
+}
+```
 
 
 
