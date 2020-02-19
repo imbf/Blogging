@@ -80,6 +80,125 @@ MVC 패턴은 프로그래밍 플랫폼에서 사용되고 이러한 패턴들�
 
 ---
 
+## MVC Pattern Example - Java
+
+```java
+// Model
+class Student
+{
+    private String rollNo;
+    private String name;
+
+    public String getRollNo()
+    {
+        return rollNo;
+    }
+
+    public void setRollNo(String rollNo)
+    {
+        this.rollNo = rollNo;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+}
+
+// View
+class StudentView
+{
+    public void printStudentDetails(String studentName, String studentRollNo)
+    {
+        System.out.println("Student: ");
+        System.out.println("Name: " + studentName);
+        System.out.println("Roll No: " + studentRollNo);
+    }
+}
+
+// Controller
+class StudentController
+{
+    private Student model;
+    private StudentView view;
+
+    public StudentController(Student model, StudentView view)   // 생성자를 통한 멤버 초기화
+    {
+        this.model = model;
+        this.view = view;
+    }
+
+    public void setStudentName(String name) // model 인스턴스의 name 변수 설정
+    {
+        model.setName(name);
+    }
+
+    public String getStudentName()
+    {
+        return model.getName();
+    }
+
+    public void setStudentRollNo(String rollNo)
+    {
+        model.setRollNo(rollNo); // model 인스턴스의 name 변수 설정
+    }
+
+    public String getStudentRollNo()
+    {
+        return model.getRollNo();
+    }
+
+    public void updateView()
+    {
+        view.printStudentDetails(model.getName(), model.getRollNo());   // 모델's Information print method
+    }
+}
+
+// Application
+public class MVCPattern
+{
+    public static void main(String[] args)
+    {
+        Student model  = retriveStudentFromDatabase();
+
+        StudentView view = new StudentView();
+
+        StudentController controller = new StudentController(model, view);
+
+        controller.updateView();
+
+        controller.setStudentName("Vikram Sharma");
+
+        controller.updateView();
+    }
+
+    private static Student retriveStudentFromDatabase()
+    {
+        Student student = new Student();
+        student.setName("Lokesh Sharma");
+        student.setRollNo("15UCS157");
+        return student;
+    }
+
+}
+// 실행 결과
+/* 
+        Student:
+        Name: Lokesh Sharma
+        Roll No: 15UCS157
+        Student:
+        Name: Virkram Sharma
+        Roll No: 15UCS157
+ */
+```
+
+---
+
 ## 결론
 
 MVC 디자인 패턴을 이해하는것은 중요한 기술이다. 이 기술을 사용하면 쉽게 업그레이드 할 수 있는 재사용 가능한 개별 모델을 만들 수 있습니다. 어플리케이션을 개발하는 걸리는 시간이 줄어들고 개발자는 효과적인 어플리케이션을 생성할 수 있습니다. MVC 이론은 컴퓨터 프로그래밍의 기본 개념이고 여러 웹 개발 서비스와 프로젝트를 도와줄 것입니다.
