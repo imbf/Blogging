@@ -1030,7 +1030,17 @@ ln.add(new NaturalNumber(35));	// compile-time error
 
 ## Type Erasure
 
+**제네릭은 제네릭 프로그래밍을 지원하기 위해 그리고 컴파일 시간에 타입 체크를 엄격하게 하기 위해 자바 언어에 소개되었다.** 제네릭을 실행하기 위해서, **Java 컴파일러는 Type Erasure를 다음에 적용한다.**
 
+- **만약 Type Parameters의 범위가 제한되어 있지 않다면, 제네릭 타입의 모든 Type Parameters를 해당 범위 또는 Object로 바꿉니다. 따라서 생성된 바이트 코드에는 일반 클래스, 인터페이스 및 메소드 만 포함됩니다.** (Type parameter는 포함되지 않는다.)
+- **타입 보호를 유지하기 위해서 필요하다면 타입 캐스팅도 삽입한다.**
+- **확장된 제네릭 타입에서 다형성을 보존하기 위해 bridge methods를 발생시킨다.**
+
+**Type Erasure는 파라미터화된 타입을 위해서 어떠한 새로운 클래스도(매우 중요하다!! \<? extends Car> 이라면 어떠한 새로운 클래스도 생성 x) 생성하지 않는다. 결과적으로, 제네릭은 런타임 오버헤드를 발생시키지 않습니다.** 
+
+---
+
+## Erasure of Generic Types
 
 
 
