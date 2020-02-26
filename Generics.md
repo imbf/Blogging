@@ -1042,7 +1042,239 @@ ln.add(new NaturalNumber(35));	// compile-time error
 
 ## Erasure of Generic Types
 
+Java 컴파일러는 제네릭 메소드 arguments내의 type parameters를 지운다. 다음의 제네릭 메소드를 고려 해 보자.
 
+```java
+// 배열의 현재 요소의 개수를 세는 메서드
+public static <T> int count(T[] anArray, T elem) {
+	int cnt = 0;
+   for (T e : anArray){
+      if(e.equals(elem)){
+			++cnt;         
+      }
+   }
+   return cnt;
+}
+```
+
+`T` 가 바운드 되지 않았기 떄문에, Java 컴파일러는 `T`를 `Object`로 교체한다.
+
+```java
+public static int count(Object[] anArray, Object elem) {
+	int cnt = 0;
+   for(Object e : anArray){
+      if(e.equals(elem)){
+         ++cnt;
+      }
+   }
+   return cnt;
+}
+```
+
+다음의 클래스들이 정의되어 있다고 가정하자.
+
+```java
+class Shape { /* ... */ }
+class Circle extends Shape { /* ... */ }
+class Rectangle extends Shape { /* ... */ }
+```
+
+다른 형태의 도형을 그리기 위해서 다음의 제네릭 매소드를 사용할 수 있다.
+
+```java
+public static <T extends Shape> void draw(T shape) { /* ... */}
+```
+
+자바 컴파일러는 T를 Shape로 대체할것이다.
+
+```java
+public static void draw(Shape shape) { /* ... */ }
+```
+
+---
+
+## Effects of Type Erasure and Birdge Methods
+
+때때로 Type Erasure는 예상하지 못한 상황을 야기시킵니다. 다음의 예제는 어떻게 이것이 일어나는 지에 대해서 보여줍니다. 이 예제는 어떻게 Java Compiler가 type erasure의 과정으로써 synthetic(합성한) method를 생성하고, 어떻게 bridge method를 호출하는지에 대해서 보여줍니다.
+
+다음의 두 클래스는 다음과 같다.
+
+```java
+public class Node<T> {
+	public T data;
+   
+   public Node(T data) { this.data = data; }
+   
+   public void setData(T data) {
+      System.out.println("Node.setData");
+      this.data = data;
+   }
+}
+
+public class MyNode extends Node<Integer> {
+   public MyNode(Integer data) { super(data); }
+   
+   public void setData(Integer data) {
+      System.out.println("MyNode.setData");
+      super.setData(data);
+   }
+}
+```
+
+다음의 코드를 고려해 보아라.
+
+```java
+MyNode mn = new MyNode(5);
+Node n = mn;						// A raw type - compiler throws an unchecked warning.
+										// 타입을 구체화 해주지 않았기 때문에 생기는 warning
+n.setData("Hello");
+Integer x = (String)mn.data;	// Causes a ClassCastException to be thrown.
+```
+
+type erasure 후에, 다음과 같이 되었다.
+
+```java
+MyNode mn = new MyNode(5);
+Node n = (MyNode)mn;				// A raw type - compiler throws an unchecked warning.
+										// 타입을 구체화 해주지 않았기 때문에 생기는 warning
+n.setData("Hello");
+Integer x = (String)mn.data;	// Causes a ClassCastException to be thrown.
+```
+
+다음은 코드가 실행될 때 어떠한 일들이 일어나는지에 대해서 서술해준다.
+
+- `n.setData("Hello");`는 `setData(object)`메소드가 `MyNode` 클래스의 객체에서 실행되어질 수 있게 한다. (`MyNode` 클래스는 `Node`로부터 `setData(object)`를 상속했다.)
+- `setData(Object)`의 바디에서,  `n`에 의해서 참조되어지는 객체의 데이터 필드는 `String`으로 할당되었다.
+- mn을 통해 참조 되어지는 같은 객체의 데이터 필드는 접근할 수 있고 integer이 되도록 예측할 수 있다. (mn은 `Node<Integer>`인 MyNode이기 때문이다.)
+- `String`을 `Integer`로 할당하려고 시도하는 것은 **Java Compiler가 할당할때 삽입되는 cast에 의해서** `ClassCastException`을  야기시킵니다.
+
+### Birdge Methods
+
+**매개변수화된 클래스 상속하거나 또는 매개변수화된 인터페이스를 구현하는 클래스 또는 인터페이스를 컴파일 할때, 컴파일러는 type erasure 과정의 일부분으로써 bridge method를 호출하고 synthetic(합성한) method를 생성할 필요가 있을 것이다.** 개발자는 bridge methods에 대해서 걱정할 필요가 없지만, stack trace에 나타나지면 당황할(puzzle) 수 있습니다.
+
+type erasure 이후, `Node`와 `MyNode` 클래스들은 다음과 같이 되었습니다.
+
+```java
+public class Node {
+	public Object data;
+   
+   public Node(Object data) { this.data = data; }
+   
+   public void setData(Object data) {
+      System.out.println("Node.setData");
+      this.data = data;
+   }
+}
+
+public class MyNode extends Node {
+   public MyNode(Integer data) { super(data); }
+   
+   public void setData(Integer data) {
+      System.out.println("MyNode.setData");
+      super.setData(data);
+   }
+}
+```
+
+type erasure이후, method signatures 는 일치하지 않는다. `Node` method는 `setData(Object)`가 되고, `MyNode` 메소드는  `setData(Integer)`이 된다. 그러므로, `MyNode setData` 메소드는 `Node setData` 메소드를 오버라이드 할 수 없다.
+
+**이러한 문제를 풀기 위해서 그리고 Type erasure 후에 제네릭 타입의 다형성을 보존하기 위해서, Java 컴파일러는 예측한대로 subtyping이 작동하도록 bridge method를 생성합니다.** `MyNode` 클래스를 위해서, 컴파일러는 setData를 위한 다음의 bridge method를 생성합니다.
+
+```java
+class MyNode extends Node {
+	
+   // 컴파일러에 의해서 생성된 Bridge method 입니다.
+   public void setData(Object data) {
+      setData((Integer) data);	// 다형성을 보존한다!!! (참 좋은 자료이다.)
+   }
+   
+   public void setData(Integer data) {
+     	System.out.println("MyNode.setData");
+      super.setData(data);
+   }
+   
+   // ...
+}
+```
+
+지금 보는 것 처럼, type erasure후 `Node` 클래스의 `setData` 메소드와 동일한 메소드 signature를 가지는 bridge method는 원래의 setData 메소드에 위임됩니다.
+
+---
+
+## Non-Reifiable Types (구체화 할 수 없는 타입들)
+
+Type Erasure 섹션에서는 컴파일러가 Compiler가 type parameters 및 type arguments와 관련된 정보를 제거하는 과정에 관해서 논의하였다. Type erasure는 varargs 형식 parameter가 수정 불가능한 타입을 갖는 가변 arguments 메소드와 관련있습니다.(다시 생각해 보자.) varargs 메소드에 대한 더 많은 정보를 얻고 싶다면 Passing information to a Method or a Constructor의 Arbitary Number of Arguments 부분을 보아라.
+
+이 페이지는 다음과 같은 Topics를 다룬다.
+
+- Non-Reifiable Types
+- Heap Pollution
+- Potential Vulnerabilities of Varargs Methods with Non-Reifiable Formal Parameters
+- Preventing Warnings from Varargs Methods with Non-Reifiable Formal Parameters
+
+### Non-Refiable Types
+
+**구체화 할 수 잇는 타입은 런타임 시 완전히 이용가능한 타입 정보를 의미한다.** 이러한 것들은 primitives, non-generic types, raw types, wildcards로 바운드 되지 않는 호출등이 있다.
+
+**구체화 할 수 없는 타입은 컴파일시에 type erasure에 의해서 제거된 정보를 의미한다.** 바운드 되지 않는 와일드카드로(ex. <?>, \<T>, \<R>)써 정의되지 않는 제네릭 타입의 호출을 의미한다. **구체화 할 수 없는 타입은 런타임시에 이용가능한 해당 정보의 모두를 가지지 않는다.** 구체화할 수 없는 타입의 예는 `List<String>` 과 `List<Number>` 이다. JVM은 런타임시에 이러한 타입들간의 차이점에 대해서 말할 수 없다. Restrictions on Generics에서 보았다 싶이, 구체화할 수 없는 타입을 사용하지 못하는 특별한 상황이 존재한다. 예로들어 instanceof 표현식 또는 배열에 있는 요소가 그러한 경우이다.
+
+### Heap Pollution (Heap 오염)
+
+**Heap 오염은 매개변수화된 타입의 변수가 매개변수화 되지 않는 타입의 객체를 참조할 때 발생한다.** 이러한 상황은 프로그램이 컴파일 타임에 unchecked warning을 발생시키는(give rise to) 일부 작업을 수행한 경우 발생합니다. 컴파일시(컴파일 타임 유형 검사 규칙 한계 내) 또는 런타임시 매개변수화된 유형(예로들어, cast or method 호출)과 관련된 연산의 정확성(correctness)을 검증할 수 없는 경우 unchecked warning이 생성되어집니다. **예로들어, Heap 오염은 raw 타입들과 파라미터화된 타입들을 섞을때 또는 unchecked 캐스팅을 사용할 때 발생합니다.** 
+
+**일반적인 상황에서, 모든 코드들이 동시에 컴파일 되어질 때, 컴파일러는 잠재적인 Heap 오염에 주의를 기울이기 위하여 unchecked warning을 발생시킵니다.** 만약 코드를 부분적으로 컴파일 시킨다면, 잠재적인 Heap 오염을 찾기 어려울 것입니다. warnings 없이 코드가 컴파일 되었다면, 어떠한 Heap 오염도 존재하지 않다는 것을 가르킵니다.
+
+### Potential Vulnerabilities of Varags Methods with Non-Reifiable Formal Parameters (추상화할 수 없는 형식 Parameters를 가진 Varargs 메소드들의 잠재적인 취약성)
+
+vararg input parameters를 포함하는 제네릭 메소드들은 Heap pollution을 발생시킬 수 있습니다.
+
+다음의  `ArrayBuilder` class를 고려해 보아라.
+
+```java
+public class ArrayBuilder {
+	
+   public static <T> void addToList (List<T> listArg, T... elements) {
+      for(T x : elements) {
+         listArg.add(x);
+      }
+   }
+   
+   public static void faultyMethod(List<String>... l) {
+      Object[] objectArray = l;	//Valid
+      objectArray[0] = Arrays.asList(42);
+      String s = l[0].get(0);		// ClassCastException thrown here
+   }
+   
+}
+```
+
+다음의 예제, `HeapPollutionExample`는 `ArrayBuilder` 클래스를 사용한다.
+
+```java
+public class HeapPollutionExample {
+
+  public static void main(String[] args) {
+
+    List<String> stringListA = new ArrayList<String>();
+    List<String> stringListB = new ArrayList<String>();
+
+    ArrayBuilder.addToList(stringListA, "Seven", "Eight", "Nine");
+    ArrayBuilder.addToList(stringListB, "Ten", "Eleven", "Twelve");
+    List<List<String>> listOfStringLists =
+      new ArrayList<List<String>>();
+    ArrayBuilder.addToList(listOfStringLists,
+      stringListA, stringListB);
+
+    ArrayBuilder.faultyMethod(Arrays.asList("Hello!"), Arrays.asList("World!"));
+  }
+}
+```
+
+컴파일 할때, 다음의 `warning은 ArrayBilder.addToList` 메소드의 정의로부터 발생되어집니다.
+
+```
+warning: [varargs] Possible heap pollution from parameterized vararg type T
+```
 
 
 
